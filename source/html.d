@@ -66,7 +66,6 @@ class Tag: HtmlElement {
 
     auto reset() {
         children.length = 0;
-        attrs = null;
         return this;
     }
 
