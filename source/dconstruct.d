@@ -255,9 +255,9 @@ struct Computed(T, alias packFunc, alias unpackFunc=packFunc) {
     }
 }
 
-unittest {
-    import std.stdio;
+import std.stdio;
 
+unittest {
     static struct PascalString {
         Field!ubyte length;
         Array!(Field!ubyte, "length") data;
@@ -270,9 +270,9 @@ unittest {
     ps.unpack(stream);
     writeln(ps);
     // {length: 5, data: [104, 101, 108, 108, 111]}
+}
 
-    /////////////////////////////////////////////////////////////////
-
+unittest {
     static struct YourStruct {
         Field!ubyte extra;
         Array!(Field!ubyte, "_.length") data;
@@ -294,7 +294,7 @@ unittest {
     }
 
     MyStruct ms;
-    stream = cast(ubyte[])"\x05\xffhelloXXXX".dup;
+    auto stream = cast(ubyte[])"\x05\xffhelloXXXX".dup;
     ms.unpack(stream);
     writeln(ms);
     // {length: 5, child: {extra: 255, data: [104, 101, 108, 108, 111], compFunc: 265}}
@@ -304,9 +304,9 @@ unittest {
     ms.pack(stream2);
     writeln(stream2);
     // [5, 65, 104, 101, 108, 108, 111]
+}
 
-    /////////////////////////////////////////////////////////////////
-
+unittest {
     static struct CString {
         Repeater!(Field!ubyte, q{(c) {return c != 0;}}) chars;
 
@@ -314,18 +314,17 @@ unittest {
     }
 
     CString cs;
-    stream = cast(ubyte[])"hello\x00XXXX".dup;
+    auto stream = cast(ubyte[])"hello\x00XXXX".dup;
     cs.unpack(stream);
 
     writeln(cs);
     // {chars: [104, 101, 108, 108, 111]}
 
-    stream2.length = 0;
+    ubyte[] stream2;
     cs.chars = cast(ubyte[])[1, 2, 3, 4, 0, 5, 6, 7];
     cs.pack(stream2);
     writeln(stream2);
     // [1, 2, 3, 4, 0]
-
 }
 
 

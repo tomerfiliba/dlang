@@ -183,7 +183,7 @@ unittest {
     auto mp = MyPage("hello");
 
     with(mp.header) {
-        h1("fuck off");
+        h1("apple pie");
     }
     with(mp.footer.reset) {
         text("(C) 2015");

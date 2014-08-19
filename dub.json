@@ -1,8 +1,8 @@
 {
 	"name" : "dlang",
 	"description" : "A minimal D bundle.",
-    "crap":{"buildOptions" : ["unittests", "debugMode", "debugInfo", "optimize", "inline", "releaseMode"]},
-    "buildOptions": ["unittests"],
+    "crap":{"buildOptions" : ["unittests", "debugMode", "debugInfo", "optimize", "inline", "releaseMode", "warningsAsErrors"]},
+    "buildOptions": ["unittests", "warningsAsErrors"],
 	"dependencies" : {
 	},
     "importPaths": ["."],
