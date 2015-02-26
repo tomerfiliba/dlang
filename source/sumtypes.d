@@ -92,47 +92,55 @@ void patternMatching() {
 }
 
 
-class Empty {override string toString() {return "E";}}
+template DataTree(T) {
+    class Empty {override string toString() {return "E";}}
+    static Tree empty = Empty.init;
 
-class Node {
-    int val;
-    Tree lhs;
-    Tree rhs;
+    class Node {
+        T val;
+        Tree lhs;
+        Tree rhs;
 
-    this(int val, Tree lhs, Tree rhs) {this.val = val; this.lhs = lhs; this.rhs = rhs;}
-    override string toString() {return format("Node(%s, %s, %s)", val, lhs, rhs);}
+        this(T val, Tree lhs, Tree rhs) {this.val = val; this.lhs = lhs; this.rhs = rhs;}
+        override string toString() {return format("Node(%s, %s, %s)", val, lhs, rhs);}
+    }
+
+    auto node(T val, Tree lhs, Tree rhs) {
+        return Tree(new Node(val, lhs, rhs));
+    }
+
+    alias Tree = SumType!(Empty, Node);
 }
 
-alias Tree = SumType!(Empty, Node);
-
-
-//
-// constructors
-//
-
-static Tree empty = new Empty;
-
-auto node(int val, Tree lhs, Tree rhs) {
-    return Tree(new Node(val, lhs, rhs));
-}
-
-R fold(R)(Tree t, R function(R, R) f, R initVal = R.init) {
-    return t.caseOf(
-        (Node n) {
-            auto r = fold(n.rhs, f, initVal);
-            auto l = fold(n.lhs, f, initVal);
-            return f(f(n.val, r), l);
-        },
-        (Empty e) {
-            return initVal;
-        }
-    );
+U fold(T, U)(T t, U function(U, U) f, U initVal = U.init) {
+    static if (is(T == SumType!(E, N).Tree, E, N)) {
+        return t.caseOf(
+            (N n) {
+                auto r = fold(n.rhs, f, initVal);
+                auto l = fold(n.lhs, f, initVal);
+                return f(f(n.val, r), l);
+            },
+            (E e) {
+                return initVal;
+            }
+        );
+    }
+    else {
+        static assert (false, T.stringof ~ " is not a tree");
+    }
 }
 
 void treeExample() {
-    auto z = node(10, node(5, empty, empty), node(7, empty, empty));
-    writeln("z=", z);
-    writeln("sum=", z.fold((int a, int b) => (a+b)));
+    alias Tree1 = DataTree!int;
+    auto t1 = Tree1.node(10, Tree1.node(5, Tree1.empty, Tree1.empty), Tree1.node(7, Tree1.empty, Tree1.empty));
+    writeln("t1=", t1);
+
+    alias Tree2 = DataTree!string;
+    auto t2 = Tree2.node("foo", Tree2.node("bar", Tree2.empty, Tree2.empty), Tree2.node("spam", Tree2.empty, Tree2.empty));
+    writeln("t2=", t2);
+
+    writeln("sum=", fold(t1, (int a, int b) => (a+b)));
+    writeln("cat=", fold(t2, (string a, string b) => (a ~ b)));
 }
 
 
@@ -197,6 +205,8 @@ alias bar = CTOR!("bar", int);
 
 alias spam = Data!(foo, bar);
 
+
+
 //alias E2 = CTOR!"E2";
 //alias N2 = CTOR!("N2", T2, T2);
 //alias T2 = Data!(E2, N2);
@@ -209,13 +219,8 @@ void main() {
     writeln(s);
     s = bar(8);
     writeln(s);
+
 }
 
-//
-// hello
-// 200
-// z=Node(10, Node(5, E, E), Node(7, E, E))
-// sum=22
-// foo
-// bar(8)
-//
+
+
